@@ -1,0 +1,15 @@
+{
+  "id": "example_script",
+  "name": "示例脚本",
+  "version": "1.0.0",
+  "description": "这是一个示例脚本，演示如何编写 SRA 自定义任务。",
+  "author": "your-name",
+  "last_updated": "2026-04-09",
+  "tasks": [
+    {
+      "name": "示例任务",
+      "entry": "main.py",
+      "class": "ExampleTask"
+    }
+  ]
+}
