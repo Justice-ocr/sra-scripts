@@ -7,7 +7,7 @@ StarRailAssistant 脚本仓库。
 在 SRA 拓展页 → 脚本仓库 → 添加仓库，填入：
 
 ```
-https://github.com/Justice-ocr/sra-scripts
+https://github.com/Your name/sra-scripts
 ```
 
 ## 如何提交脚本
