@@ -1,0 +1,15 @@
+{
+  "id": "bag_check",
+  "name": "背包资源查询",
+  "version": "1.0.0",
+  "description": "查询背包中的星琼、专票、通票、信用点数量，并通过通知渠道发送结果。",
+  "author": "Justice-ocr",
+  "last_updated": "2026-04-09",
+  "tasks": [
+    {
+      "name": "查询背包资源",
+      "entry": "main.py",
+      "class": "BagCheckTask"
+    }
+  ]
+}
