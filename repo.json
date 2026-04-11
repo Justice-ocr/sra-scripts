@@ -1,0 +1,58 @@
+{
+  "name": "SRA 官方脚本仓库",
+  "version": "1.1.0",
+  "scripts": [
+    {
+      "id": "bag_check",
+      "name": "背包资源查询",
+      "version": "1.0.0",
+      "description": "查询崩铁背包中的星琼、星轨专票、星轨通票、信用点数量，并通过已配置的通知渠道发送结果。",
+      "author": "Justice-ocr",
+      "download_url": "https://github.com/Justice-ocr/sra-scripts/archive/refs/heads/main.zip",
+      "repo_path": "repo/bag_check",
+      "last_updated": "2026-04-09",
+      "tasks": [
+        {
+          "name": "查询背包资源",
+          "entry": "main.py",
+          "class": "BagCheckTask"
+        }
+      ]
+    },
+    {
+      "id": "divergent_universe",
+      "name": "差分宇宙",
+      "version": "1.0.0",
+      "description": "原生复刻三月七小助手的差分宇宙逻辑，无需安装三月七即可运行。支持常规演算、周期演算，自动处理随意门、祝福/方程/奇物选择等。",
+      "author": "Justice-ocr",
+      "download_url": "https://github.com/Justice-ocr/sra-scripts/archive/refs/heads/main.zip",
+      "repo_path": "repo/divergent_universe",
+      "last_updated": "2026-04-11",
+      "settings": "settings.json",
+      "tasks": [
+        {
+          "name": "执行差分宇宙",
+          "entry": "main.py",
+          "class": "DivergentUniverseTask"
+        }
+      ]
+    },
+    {
+      "id": "example_script",
+      "name": "示例脚本",
+      "version": "1.0.0",
+      "description": "这是一个示例脚本，演示如何编写 SRA 自定义任务。",
+      "author": "your-name",
+      "download_url": "https://github.com/Justice-ocr/sra-scripts/archive/refs/heads/main.zip",
+      "repo_path": "repo/example_script",
+      "last_updated": "2026-04-09",
+      "tasks": [
+        {
+          "name": "示例任务",
+          "entry": "main.py",
+          "class": "ExampleTask"
+        }
+      ]
+    }
+  ]
+}
