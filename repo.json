@@ -1,6 +1,6 @@
 {
   "name": "SRA Scripts",
-  "generated_at": "2026-05-04T08:11:55.821438+00:00",
+  "generated_at": "2026-05-04T08:13:44.199356+00:00",
   "scripts": [
     {
       "id": "bag_check",
@@ -16,6 +16,23 @@
           "name": "查询背包资源",
           "entry": "main.py",
           "class": "BagCheckTask"
+        }
+      ]
+    },
+    {
+      "id": "divergent_universe_m7",
+      "name": "差分宇宙（三月七）",
+      "version": "1.0.0",
+      "description": "调用三月七小助手执行差分宇宙（模拟宇宙·差分宇宙），支持在脚本配置页修改三月七的差分宇宙相关设置。",
+      "author": "Justice-ocr",
+      "last_updated": "2026-05-04",
+      "download_url": "https://github.com/Justice-ocr/sra-scripts/archive/refs/heads/main.zip",
+      "repo_path": "repo/divergent_universe_m7",
+      "tasks": [
+        {
+          "name": "差分宇宙",
+          "entry": "main.py",
+          "class": "DivergentUniverseM7Task"
         }
       ]
     },
