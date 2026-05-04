@@ -1,6 +1,6 @@
 {
   "name": "SRA Scripts",
-  "generated_at": "2026-05-04T08:34:53.953436+00:00",
+  "generated_at": "2026-05-04T09:03:10.112246+00:00",
   "scripts": [
     {
       "id": "bag_check",
@@ -9,7 +9,7 @@
       "description": "查询背包中的星琼、专票、通票、信用点数量，并通过通知渠道发送结果。",
       "author": "Justice-ocr",
       "last_updated": "2026-04-09",
-      "download_url": "https://raw.githubusercontent.com/your-user/sra-scripts/main/repo/bag_check",
+      "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/bag_check",
       "repo_path": "repo/bag_check",
       "tasks": [
         {
@@ -26,7 +26,7 @@
       "description": "调用三月七小助手执行差分宇宙（模拟宇宙·差分宇宙），支持在脚本配置页修改三月七的差分宇宙相关设置。",
       "author": "Justice-ocr",
       "last_updated": "2026-05-04",
-      "download_url": "https://raw.githubusercontent.com/your-user/sra-scripts/main/repo/divergent_universe_m7",
+      "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/divergent_universe_m7",
       "repo_path": "repo/divergent_universe_m7",
       "tasks": [
         {
@@ -43,7 +43,7 @@
       "description": "这是一个示例脚本，演示如何编写 SRA 自定义任务。",
       "author": "your-name",
       "last_updated": "2026-04-09",
-      "download_url": "https://raw.githubusercontent.com/your-user/sra-scripts/main/repo/example_script",
+      "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/example_script",
       "repo_path": "repo/example_script",
       "tasks": [
         {

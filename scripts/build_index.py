@@ -38,7 +38,7 @@ REPO_DIR = Path(__file__).parent.parent / "repo"
 OUTPUT = Path(__file__).parent.parent / "repo.json"
 
 # 从环境变量读取仓库信息（GitHub Actions 提供）
-GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY", "your-user/sra-scripts")
+GITHUB_REPOSITORY = os.getenv("GITHUB_REPOSITORY", "Justice-ocr/sra-scripts")
 GITHUB_REF_NAME = os.getenv("GITHUB_REF_NAME", "main")
 
 RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPOSITORY}/{GITHUB_REF_NAME}"
