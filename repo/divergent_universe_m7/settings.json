@@ -1,7 +1,7 @@
 [
   {
     "key": "m7_path",
-    "type": "string",
+    "type": "folder",
     "default": "C:\\Program Files\\March7thAssistant",
     "label": "三月七安装目录",
     "description": "March7thAssistant 的安装目录，包含 March7th.exe 的文件夹路径"
@@ -11,7 +11,13 @@
     "type": "select",
     "default": "4",
     "label": "难度等级",
-    "options": ["1", "2", "3", "4", "5"],
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
     "description": "差分宇宙难度，对应第1-5层"
   },
   {
