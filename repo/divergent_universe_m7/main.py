@@ -38,7 +38,7 @@ M7_FIXED_FIELDS = {
 
 
 def _find_m7_exe(m7_path: str) -> Path:
-    for name in ("March7th.exe", "March7thAssistant.exe", "March7thAssist.exe"):
+    for name in ("March7th Assistant.exe", "March7th.exe", "March7thAssistant.exe", "March7thAssist.exe"):
         p = Path(m7_path) / name
         if p.exists():
             return p
