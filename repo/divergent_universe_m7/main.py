@@ -24,7 +24,9 @@ M7_FIELD_MAP = {
 }
 
 M7_FIXED_FIELDS = {
-    "universe_category": "divergent",
+    "universe_category":   "divergent",
+    "pause_after_success": False,   # 完成后自动退出，不等待用户按回车
+    "exit_after_failure":  True,    # 失败后也自动退出
 }
 
 
@@ -161,7 +163,9 @@ class DivergentUniverseM7Task(BaseTask):
             logger.info(f"--- 第 {i + 1} 次差分宇宙 ---")
 
             # 用 PowerShell Start-Process -Verb RunAs 以管理员身份启动
+            # 设置环境变量 MARCH7TH_GUI_STARTED=true，让三月七跳过暂停直接退出
             ps_cmd = (
+                f'$env:MARCH7TH_GUI_STARTED="true"; '
                 f'Start-Process -FilePath "{m7_exe}" '
                 f'-ArgumentList "divergent" '
                 f'-WorkingDirectory "{m7_exe.parent}" '
