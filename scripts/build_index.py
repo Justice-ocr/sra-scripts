@@ -47,26 +47,11 @@ DOWNLOAD_BASE = f"https://github.com/{GITHUB_REPOSITORY}/releases/download"
 
 def get_script_download_url(script_id: str, version: str) -> str:
     """
-    下载 URL 策略：
-    优先用 GitHub Releases（需要发 release），
-    fallback 用 raw zip（直接从 git 打包）。
-    这里统一用 raw zip 方式，简单可靠。
-    格式：https://github.com/user/repo/raw/main/repo/{id}/
-    实际下载整个文件夹用 ZIP API：
-    https://github.com/user/repo/archive/refs/heads/main.zip 太大了，
-    改用 GitHub Contents API 逐文件下载，或者
-    推荐用 GitHub Releases 上传 zip。
-
-    当前策略：用 GitHub API 下载文件夹 zip
-    https://github.com/{repo}/archive/{ref}.zip 需要在应用端解压后找子目录
-    更好的方式：用 degit 或者直接 GitHub API
+    返回脚本子目录的 raw base URL。
+    应用端据此逐文件下载（manifest.json → 获取文件列表 → 逐文件下载）。
+    格式：https://raw.githubusercontent.com/{user}/{repo}/{branch}/repo/{script_id}
     """
-    # 使用 GitHub 的文件夹下载 API（通过 Code > Download ZIP 的方式）
-    # 实际生效的 URL 格式（GitHub 支持）：
-    # https://github.com/{user}/{repo}/archive/refs/heads/{branch}.zip
-    # 应用端下载后从 zip 里找 repo/{script_id}/ 子目录
-    # 这里记录 script_id 供应用端定位
-    return f"https://github.com/{GITHUB_REPOSITORY}/archive/refs/heads/{GITHUB_REF_NAME}.zip"
+    return f"https://raw.githubusercontent.com/{GITHUB_REPOSITORY}/{GITHUB_REF_NAME}/repo/{script_id}"
 
 
 def build_index():
