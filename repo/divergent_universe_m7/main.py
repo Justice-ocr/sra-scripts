@@ -174,8 +174,6 @@ class DivergentUniverseM7Task(BaseTask):
             proc = subprocess.Popen(
                 cmd,
                 cwd=str(m7_exe.parent),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
             )
         except Exception as e:
             logger.error(f"启动三月七失败：{e}")
@@ -201,12 +199,7 @@ class DivergentUniverseM7Task(BaseTask):
                     return True
                 else:
                     logger.error(f"三月七异常退出（返回码 {ret}）")
-                    try:
-                        _, stderr = proc.communicate(timeout=2)
-                        if stderr:
-                            logger.error(f"错误输出：{stderr.decode('utf-8', errors='replace')}")
-                    except Exception:
-                        pass
+
                     return False
             time.sleep(2)
 
