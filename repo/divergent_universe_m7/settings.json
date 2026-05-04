@@ -1,0 +1,80 @@
+[
+  {
+    "key": "m7_path",
+    "type": "string",
+    "default": "C:\\Program Files\\March7thAssistant",
+    "label": "三月七安装目录",
+    "description": "March7thAssistant 的安装目录，包含 March7th.exe 的文件夹路径"
+  },
+  {
+    "key": "universe_level",
+    "type": "select",
+    "default": "4",
+    "label": "难度等级",
+    "options": ["1", "2", "3", "4", "5"],
+    "description": "差分宇宙难度，对应第1-5层"
+  },
+  {
+    "key": "run_times",
+    "type": "int",
+    "default": "1",
+    "label": "运行次数",
+    "description": "执行差分宇宙的次数，-1 为无限循环直到手动停止"
+  },
+  {
+    "key": "team_number",
+    "type": "int",
+    "default": "1",
+    "label": "队伍编号",
+    "description": "使用的队伍编号（1起）"
+  },
+  {
+    "key": "use_support",
+    "type": "bool",
+    "default": "false",
+    "label": "使用支援角色",
+    "description": "是否使用好友支援角色"
+  },
+  {
+    "key": "support_character",
+    "type": "string",
+    "default": "",
+    "label": "支援角色名",
+    "description": "指定支援角色名称（留空则选第一个）"
+  },
+  {
+    "key": "use_technique",
+    "type": "bool",
+    "default": "true",
+    "label": "使用秘技",
+    "description": "进入战斗前是否使用秘技"
+  },
+  {
+    "key": "technique_fight",
+    "type": "bool",
+    "default": "true",
+    "label": "秘技战斗",
+    "description": "使用秘技直接开启战斗"
+  },
+  {
+    "key": "buff_index",
+    "type": "int",
+    "default": "1",
+    "label": "优先祝福索引",
+    "description": "优先选择第几个祝福（1起），0 表示随机"
+  },
+  {
+    "key": "max_lost_buffs",
+    "type": "int",
+    "default": "0",
+    "label": "最大可损失祝福数",
+    "description": "允许损失的最多祝福数量，超过则重开，0 表示不限制"
+  },
+  {
+    "key": "wait_timeout",
+    "type": "int",
+    "default": "600",
+    "label": "超时时间（秒）",
+    "description": "等待三月七完成的最长时间（秒），超时视为失败"
+  }
+]
