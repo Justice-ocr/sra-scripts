@@ -28,7 +28,6 @@ except ImportError:
 M7_FIELD_MAP = {
     "divergent_type":              "divergent_type",
     "weekly_divergent_level":      "weekly_divergent_level",
-    "divergent_team_type":         "divergent_team_type",
     "weekly_divergent_stable_mode": "weekly_divergent_stable_mode",
 }
 
@@ -168,7 +167,7 @@ class DivergentUniverseM7Task(BaseTask):
         return success
 
     def _run_m7_once(self, m7_exe: Path, timeout: int) -> bool:
-        cmd = [str(m7_exe), "--auto-run", "--task", "universe", "--exit-after-done"]
+        cmd = [str(m7_exe), "divergent"]
         logger.info(f"启动三月七：{' '.join(cmd)}")
 
         try:
