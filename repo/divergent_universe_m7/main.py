@@ -2,7 +2,12 @@
 差分宇宙（三月七小助手）脚本
 调用 March7thAssistant 执行差分宇宙，支持通过 SRA 脚本配置页修改三月七的相关设置。
 
-三月七小助手配置文件：{m7_path}/config/config.yaml
+配置文件：{m7_path}/config/config.yaml
+关键字段：
+  - divergent_type: normal/cycle（演算模式，--task universe 时使用）
+  - weekly_divergent_level: 1-6（难度等级）
+  - divergent_team_type: 追击/dot/终结技/击破/盾反（队伍类型）
+  - weekly_divergent_stable_mode: true/false（低性能兼容模式）
 """
 
 import subprocess
@@ -20,18 +25,16 @@ except ImportError:
     HAS_YAML = False
 
 # SRA 配置项 -> 三月七 config.yaml 字段映射
-# 格式：sra_key -> yaml_key
 M7_FIELD_MAP = {
-    "divergent_type":       "divergent_type",
-    "divergent_level":      "weekly_divergent_level",
-    "divergent_team_type":  "divergent_team_type",
-    "stable_mode":          "weekly_divergent_stable_mode",
+    "divergent_type":              "divergent_type",
+    "weekly_divergent_level":      "weekly_divergent_level",
+    "divergent_team_type":         "divergent_team_type",
+    "weekly_divergent_stable_mode": "weekly_divergent_stable_mode",
 }
 
-# 固定写入的字段（不暴露给用户配置）
+# 固定写入（确保 --task universe 走差分宇宙分支）
 M7_FIXED_FIELDS = {
-    "universe_category":    "divergent",
-    "weekly_divergent_enable": True,
+    "universe_category": "divergent",
 }
 
 
@@ -43,13 +46,12 @@ def _find_m7_exe(m7_path: str) -> Path:
     return Path(m7_path) / "March7th.exe"
 
 
-def _find_m7_config(m7_path: str) -> Path:
-    """查找三月七配置文件（yaml 优先，fallback json）"""
-    for name in ("config/config.yaml", "config.yaml", "config/config.json", "config.json"):
+def _find_m7_config(m7_path: str) -> Path | None:
+    for name in ("config/config.yaml", "config.yaml"):
         p = Path(m7_path) / name
         if p.exists():
             return p
-    return Path(m7_path) / "config" / "config.yaml"
+    return None
 
 
 def _load_yaml(path: Path) -> dict:
@@ -67,7 +69,7 @@ def _save_yaml(path: Path, data: dict):
 
 
 def _coerce(value: str, current):
-    """根据当前值类型转换字符串"""
+    """根据现有值的类型转换字符串"""
     if isinstance(current, bool):
         return str(value).lower() in ("true", "1", "yes")
     if isinstance(current, int):
@@ -79,48 +81,42 @@ def _coerce(value: str, current):
 
 
 class DivergentUniverseM7Task(BaseTask):
-    """
-    差分宇宙（三月七小助手）任务
-
-    运行流程：
-    1. 读取 SRA 脚本配置
-    2. 备份三月七 config.yaml 中的相关字段
-    3. 将 SRA 配置写入三月七 config.yaml
-    4. 启动三月七执行差分宇宙
-    5. 等待完成
-    6. 恢复三月七原始配置
-    """
+    """差分宇宙（三月七小助手）任务"""
 
     def run(self) -> bool:
         logger.info("=== 差分宇宙（三月七）脚本启动 ===")
 
-        m7_path  = self.get_param("m7_path",  "D:\\March7thAssistant_full")
+        m7_path   = self.get_param("m7_path", "D:\\March7thAssistant_full")
         run_times = int(self.get_param("run_times", 1))
-        timeout   = int(self.get_param("wait_timeout", 600))
+        timeout   = int(self.get_param("wait_timeout", 7200))
 
-        m7_exe    = _find_m7_exe(m7_path)
-        m7_config = _find_m7_config(m7_path)
-
+        m7_exe = _find_m7_exe(m7_path)
         if not m7_exe.exists():
             logger.error(f"未找到三月七可执行文件：{m7_exe}")
             logger.error("请在脚本配置中确认「三月七安装目录」是否正确")
             return False
 
+        m7_config = _find_m7_config(m7_path)
         logger.info(f"三月七路径：{m7_exe}")
-        logger.info(f"配置文件：{m7_config}")
+        if m7_config:
+            logger.info(f"配置文件：{m7_config}")
+        else:
+            logger.warning(f"未找到三月七配置文件，将使用原有配置运行")
 
         # 备份并修改配置
         backup = {}
-        config_modified = False
-        if m7_config.exists():
+        if m7_config:
             try:
                 cfg = _load_yaml(m7_config)
-                # 备份将要修改的字段
                 for yaml_key in list(M7_FIELD_MAP.values()) + list(M7_FIXED_FIELDS.keys()):
                     backup[yaml_key] = cfg.get(yaml_key)
+
                 # 写入固定字段
                 for yaml_key, val in M7_FIXED_FIELDS.items():
-                    cfg[yaml_key] = val
+                    if cfg.get(yaml_key) != val:
+                        logger.info(f"  {yaml_key}: {cfg.get(yaml_key)!r} → {val!r}")
+                        cfg[yaml_key] = val
+
                 # 写入用户配置
                 for sra_key, yaml_key in M7_FIELD_MAP.items():
                     raw = self.get_param(sra_key, None)
@@ -130,16 +126,11 @@ class DivergentUniverseM7Task(BaseTask):
                     if cfg.get(yaml_key) != val:
                         logger.info(f"  {yaml_key}: {cfg.get(yaml_key)!r} → {val!r}")
                         cfg[yaml_key] = val
-                        config_modified = True
-                if config_modified or any(
-                    cfg.get(k) != v for k, v in M7_FIXED_FIELDS.items()
-                ):
-                    _save_yaml(m7_config, cfg)
-                    logger.info("已将配置写入三月七 config.yaml")
+
+                _save_yaml(m7_config, cfg)
+                logger.info("已将配置写入三月七 config.yaml")
             except Exception as e:
                 logger.warning(f"修改三月七配置失败（将使用原有配置）：{e}")
-        else:
-            logger.warning(f"三月七配置文件不存在：{m7_config}，将使用默认配置运行")
 
         # 执行
         actual_times = run_times if run_times > 0 else 999999
@@ -160,7 +151,7 @@ class DivergentUniverseM7Task(BaseTask):
             logger.info(f"第 {i + 1} 次完成")
 
         # 恢复配置
-        if m7_config.exists() and backup:
+        if m7_config and backup:
             try:
                 cfg = _load_yaml(m7_config)
                 for yaml_key, orig_val in backup.items():
@@ -171,12 +162,9 @@ class DivergentUniverseM7Task(BaseTask):
                 _save_yaml(m7_config, cfg)
                 logger.info("已恢复三月七原始配置")
             except Exception as e:
-                logger.warning(f"恢复三月七配置失败（不影响结果）：{e}")
+                logger.warning(f"恢复三月七配置失败：{e}")
 
-        if success:
-            logger.info("=== 差分宇宙（三月七）脚本完成 ===")
-        else:
-            logger.error("=== 差分宇宙（三月七）脚本执行失败 ===")
+        logger.info(f"=== 差分宇宙（三月七）脚本{'完成' if success else '执行失败'} ===")
         return success
 
     def _run_m7_once(self, m7_exe: Path, timeout: int) -> bool:

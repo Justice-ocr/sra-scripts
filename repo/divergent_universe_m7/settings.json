@@ -15,12 +15,12 @@
     "description": "差分宇宙模式：normal=常规演算，cycle=周期演算"
   },
   {
-    "key": "divergent_level",
+    "key": "weekly_divergent_level",
     "type": "select",
     "default": "5",
     "label": "难度等级",
     "options": ["1", "2", "3", "4", "5", "6"],
-    "description": "差分宇宙难度等级（1-6）"
+    "description": "差分宇宙难度（1-5，6=常规演算星阶模式，周期演算最高为5）"
   },
   {
     "key": "divergent_team_type",
@@ -38,17 +38,17 @@
     "description": "执行差分宇宙的次数，-1 为无限循环直到手动停止"
   },
   {
-    "key": "stable_mode",
+    "key": "weekly_divergent_stable_mode",
     "type": "bool",
     "default": "false",
-    "label": "稳定模式",
-    "description": "启用稳定模式，运行若出现问题可尝试开启"
+    "label": "低性能兼容模式",
+    "description": "启用后可提高事件和随意门交互的成功率，低性能设备或云游戏建议开启"
   },
   {
     "key": "wait_timeout",
     "type": "int",
-    "default": "600",
+    "default": "7200",
     "label": "超时时间（秒）",
-    "description": "等待三月七完成的最长时间（秒），超时视为失败"
+    "description": "等待三月七完成的最长时间（秒），默认 7200 秒（2小时）"
   }
 ]
