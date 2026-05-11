@@ -27,6 +27,7 @@ M7_FIXED_FIELDS = {
     "universe_category":   "divergent",
     "pause_after_success": False,   # 完成后自动退出，不等待用户按回车
     "exit_after_failure":  True,    # 失败后也自动退出
+    "auto_update":         True,    # 跳过首次运行检查（需通过图形界面启动的限制）
 }
 
 
