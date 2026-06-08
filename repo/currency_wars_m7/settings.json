@@ -1,0 +1,146 @@
+[
+  {
+    "key": "group_m7",
+    "type": "group",
+    "label": "三月七路径"
+  },
+  {
+    "key": "m7_path",
+    "type": "folder",
+    "default": "D:\\March7thAssistant_full",
+    "label": "三月七安装目录",
+    "description": "March7thAssistant 的安装目录，包含可执行文件的文件夹路径。"
+  },
+  {
+    "key": "group_currency_wars",
+    "type": "group",
+    "label": "货币战争配置"
+  },
+  {
+    "key": "currencywars_type",
+    "type": "select",
+    "default": "overclock",
+    "label": "货币战争模式",
+    "options": [
+      "normal",
+      "overclock"
+    ],
+    "description": "normal=标准博弈，overclock=超频博弈。"
+  },
+  {
+    "key": "currencywars_rank_difficulty",
+    "type": "select",
+    "default": "lowest",
+    "label": "职级难度",
+    "options": [
+      "current",
+      "lowest",
+      "highest"
+    ],
+    "description": "current=当前职级，lowest=最低职级，highest=最高职级。"
+  },
+  {
+    "key": "currencywars_strategy",
+    "type": "select",
+    "default": "default",
+    "label": "执行策略",
+    "options": [
+      "default",
+      "aglaea",
+      "seele"
+    ],
+    "description": "三月七货币战争策略：default=默认，aglaea=阿格莱雅，seele=希儿。"
+  },
+  {
+    "key": "currencywars_remembrance_trailblazer_name",
+    "type": "string",
+    "default": "",
+    "label": "记忆开拓者名称",
+    "description": "阿格莱雅策略下“开拓者·记忆”在游戏内的实际显示名字；留空则跳过该角色。"
+  },
+  {
+    "key": "currencywars_fast_mode",
+    "type": "bool",
+    "default": "true",
+    "label": "速通模式",
+    "description": "启用后仅在首领节点尝试装备武器。"
+  },
+  {
+    "key": "currencywars_strategy_restart_on_special_tags",
+    "type": "bool",
+    "default": "true",
+    "label": "特殊词条重开",
+    "description": "根据所选策略，遇到特定词条或词条组合时允许三月七重开。"
+  },
+  {
+    "key": "currencywars_bonus_enable",
+    "type": "bool",
+    "default": "false",
+    "label": "奖励后提取饰品",
+    "description": "领取积分奖励后，调用三月七执行位面饰品快速提取消耗深度沉浸器。"
+  },
+  {
+    "key": "group_run",
+    "type": "group",
+    "label": "运行控制"
+  },
+  {
+    "key": "check_score",
+    "type": "bool",
+    "default": "true",
+    "label": "检查积分",
+    "description": "运行结束后保留三月七默认行为：检查货币战争积分，达到 18000 时记录本周完成时间。"
+  },
+  {
+    "key": "run_mode",
+    "type": "select",
+    "default": "normal",
+    "label": "运行方式",
+    "options": [
+      "normal",
+      "temp",
+      "loop"
+    ],
+    "description": "normal=从首页开始执行货币战争，temp=中途接管当前货币战争，loop=让三月七循环执行。"
+  },
+  {
+    "key": "run_times",
+    "type": "int",
+    "default": "1",
+    "label": "启动次数",
+    "description": "启动三月七执行的次数。run_mode=loop 时此项会被忽略，由三月七内部循环，需手动停止。"
+  },
+  {
+    "key": "wait_timeout",
+    "type": "int",
+    "default": "7200",
+    "label": "超时时间（秒）",
+    "description": "等待三月七完成的最长时间；超时后尝试终止本次启动的三月七进程。"
+  },
+  {
+    "key": "group_safety",
+    "type": "group",
+    "label": "安全选项"
+  },
+  {
+    "key": "allow_existing_m7",
+    "type": "bool",
+    "default": "false",
+    "label": "允许三月七已运行",
+    "description": "默认不允许，防止修改配置影响正在运行的三月七。确认无其它任务时可开启。"
+  },
+  {
+    "key": "restore_config",
+    "type": "bool",
+    "default": "true",
+    "label": "结束后恢复配置",
+    "description": "建议保持开启。开启后脚本结束、失败、超时或停止时都会尝试恢复三月七原始配置。"
+  },
+  {
+    "key": "start_as_admin",
+    "type": "bool",
+    "default": "true",
+    "label": "管理员启动三月七",
+    "description": "通过 PowerShell Start-Process -Verb RunAs 启动三月七，适合需要管理员权限控制游戏窗口的场景。"
+  }
+]

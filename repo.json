@@ -1,6 +1,6 @@
 {
   "name": "SRA Scripts",
-  "generated_at": "2026-05-11T13:09:59.390156+00:00",
+  "generated_at": "2026-06-08T08:40:02.347559+00:00",
   "scripts": [
     {
       "id": "bag_check",
@@ -16,6 +16,28 @@
           "name": "查询背包资源",
           "entry": "main.py",
           "class": "BagCheckTask"
+        }
+      ]
+    },
+    {
+      "id": "currency_wars_m7",
+      "name": "货币战争（三月七）",
+      "version": "1.0.0",
+      "description": "调用三月七小助手执行货币战争，支持模式、职级难度、策略、奖励领取和快速饰品提取等配置，并在结束后恢复三月七原始配置。",
+      "author": "Justice-ocr",
+      "last_updated": "2026-06-08",
+      "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/currency_wars_m7",
+      "repo_path": "repo/currency_wars_m7",
+      "tasks": [
+        {
+          "name": "货币战争",
+          "entry": "main.py",
+          "class": "CurrencyWarsM7Task"
+        },
+        {
+          "name": "货币战争中途接管",
+          "entry": "main.py",
+          "class": "CurrencyWarsM7TempTask"
         }
       ]
     },
