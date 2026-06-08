@@ -123,6 +123,13 @@
     "label": "安全选项"
   },
   {
+    "key": "start_as_admin",
+    "type": "bool",
+    "default": "true",
+    "label": "管理员启动三月七",
+    "description": "通过 PowerShell Start-Process -Verb RunAs 启动三月七，适合需要管理员权限控制游戏窗口的场景。"
+  },
+  {
     "key": "allow_existing_m7",
     "type": "bool",
     "default": "false",
@@ -135,12 +142,5 @@
     "default": "true",
     "label": "结束后恢复配置",
     "description": "建议保持开启。开启后脚本结束、失败、超时或停止时都会尝试恢复三月七原始配置。"
-  },
-  {
-    "key": "start_as_admin",
-    "type": "bool",
-    "default": "true",
-    "label": "管理员启动三月七",
-    "description": "通过 PowerShell Start-Process -Verb RunAs 启动三月七，适合需要管理员权限控制游戏窗口的场景。"
   }
 ]
