@@ -6,7 +6,7 @@ import re
 from loguru import logger
 
 from SRACore.task import BaseTask
-from SRACore.util.notify import try_send_notification
+from SRACore.notification import try_send_notification
 
 # 格子坐标（比例，相对于游戏窗口，从截图重新标定）
 _G1X, _G1Y = 188, 191   # 第1格中心像素（1920x1080窗口内）
