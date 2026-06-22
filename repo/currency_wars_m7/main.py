@@ -8,11 +8,13 @@ config.yaml 中货币战争相关配置，并在结束后恢复，避免影响�
 from __future__ import annotations
 
 import csv
+import json
 import os
 import re
 import subprocess
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -58,6 +60,15 @@ RUN_MODE_TO_ACTION = {
     "loop": "currencywarsloop",
 }
 
+SCHEDULE_MODES = {
+    "weekly": "周常",
+    "daily": "日常",
+    "once": "一次性",
+    "always": "每次运行",
+}
+
+STATE_FILE = Path(__file__).resolve().parent / "state.json"
+
 
 @dataclass(frozen=True)
 class ProcessInfo:
@@ -77,6 +88,33 @@ def _int_param(value: Any, default: int) -> int:
         return int(value)
     except (TypeError, ValueError):
         return default
+
+
+def _load_state() -> dict[str, Any]:
+    if not STATE_FILE.exists():
+        return {}
+    try:
+        data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception as e:
+        logger.warning(f"读取脚本运行状态失败，将重新记录：{e}")
+        return {}
+
+
+def _save_state(state: dict[str, Any]) -> None:
+    try:
+        STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        logger.warning(f"保存脚本运行状态失败：{e}")
+
+
+def _current_day() -> str:
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def _current_week() -> str:
+    year, week, _ = datetime.now().isocalendar()
+    return f"{year}-W{week:02d}"
 
 
 def _coerce_config_value(raw: Any, current: Any) -> Any:
@@ -324,6 +362,9 @@ class _CurrencyWarsM7Runner:
         self.forced_mode = forced_mode
 
     def run(self) -> bool:
+        if not self._should_run_by_schedule():
+            return True
+
         m7_path = self.task.get_param("m7_path", "D:\\March7thAssistant_full")
         m7_exe = _find_m7_exe(m7_path)
         if not m7_exe.exists():
@@ -404,7 +445,72 @@ class _CurrencyWarsM7Runner:
                 logger.warning(f"恢复三月七配置失败：{e}")
 
         logger.info(f"=== 货币战争（三月七）脚本{'完成' if success else '执行失败'} ===")
+        if success:
+            self._mark_schedule_completed()
         return success
+
+    def _get_schedule_mode(self) -> str:
+        mode = str(self.task.get_param("schedule_mode", "weekly")).strip().lower()
+        if mode not in SCHEDULE_MODES:
+            logger.warning(f"未知运行频率 {mode!r}，按周常处理")
+            return "weekly"
+        return mode
+
+    def _schedule_state_key(self) -> str:
+        task_key = getattr(self.task, "_sra_task_key", self.task.__class__.__name__)
+        return f"{task_key}:{self.forced_mode or 'default'}"
+
+    def _should_run_by_schedule(self) -> bool:
+        mode = self._get_schedule_mode()
+        logger.info(f"运行频率：{SCHEDULE_MODES[mode]}")
+        if mode == "always":
+            return True
+
+        state = _load_state()
+        record = state.get(self._schedule_state_key(), {})
+        if not isinstance(record, dict):
+            record = {}
+
+        if mode == "daily":
+            today = _current_day()
+            if record.get("last_day") == today:
+                logger.info(f"今日已运行过，跳过本次执行（{today}）")
+                return False
+            return True
+
+        if mode == "weekly":
+            week = _current_week()
+            if record.get("last_week") == week:
+                logger.info(f"本周已运行过，跳过本次执行（{week}）")
+                return False
+            return True
+
+        if record.get("completed_once"):
+            logger.info("一次性任务已完成过，跳过本次执行")
+            return False
+        return True
+
+    def _mark_schedule_completed(self) -> None:
+        mode = self._get_schedule_mode()
+        if mode == "always":
+            return
+
+        state = _load_state()
+        key = self._schedule_state_key()
+        record = state.get(key, {})
+        if not isinstance(record, dict):
+            record = {}
+
+        now = datetime.now().isoformat(timespec="seconds")
+        record["last_success_at"] = now
+        if mode == "daily":
+            record["last_day"] = _current_day()
+        elif mode == "weekly":
+            record["last_week"] = _current_week()
+        elif mode == "once":
+            record["completed_once"] = True
+        state[key] = record
+        _save_state(state)
 
     def _build_config_updates(self, config_path: Path) -> dict[str, Any]:
         cfg = _read_top_level_scalars(config_path.read_text(encoding="utf-8"))

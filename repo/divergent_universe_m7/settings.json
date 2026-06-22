@@ -40,6 +40,19 @@
     "description": "执行差分宇宙的次数，-1 为无限循环直到手动停止"
   },
   {
+    "key": "schedule_mode",
+    "type": "select",
+    "default": "weekly",
+    "label": "运行频率",
+    "options": [
+      "weekly",
+      "daily",
+      "once",
+      "always"
+    ],
+    "description": "weekly=每周成功运行一次，daily=每天成功运行一次，once=成功运行一次后不再运行，always=每次自定义任务被调用都运行"
+  },
+  {
     "key": "weekly_divergent_stable_mode",
     "type": "bool",
     "default": "false",

@@ -85,6 +85,19 @@
     "label": "运行控制"
   },
   {
+    "key": "schedule_mode",
+    "type": "select",
+    "default": "weekly",
+    "label": "运行频率",
+    "options": [
+      "weekly",
+      "daily",
+      "once",
+      "always"
+    ],
+    "description": "weekly=每周成功运行一次，daily=每天成功运行一次，once=成功运行一次后不再运行，always=每次自定义任务被调用都运行。"
+  },
+  {
     "key": "check_score",
     "type": "bool",
     "default": "true",

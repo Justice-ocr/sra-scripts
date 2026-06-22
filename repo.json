@@ -22,10 +22,10 @@
     {
       "id": "currency_wars_m7",
       "name": "货币战争（三月七）",
-      "version": "1.0.0",
-      "description": "调用三月七小助手执行货币战争，支持模式、职级难度、策略、奖励领取和快速饰品提取等配置，并在结束后恢复三月七原始配置。",
+      "version": "1.1.0",
+      "description": "调用三月七小助手执行货币战争，支持模式、职级难度、策略、奖励领取、快速饰品提取和周常/日常/一次性运行频率，并在结束后恢复三月七原始配置。",
       "author": "Justice-ocr",
-      "last_updated": "2026-06-08",
+      "last_updated": "2026-06-22",
       "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/currency_wars_m7",
       "repo_path": "repo/currency_wars_m7",
       "tasks": [
@@ -44,10 +44,10 @@
     {
       "id": "divergent_universe_m7",
       "name": "差分宇宙（三月七）",
-      "version": "1.0.0",
-      "description": "调用三月七小助手执行差分宇宙（模拟宇宙·差分宇宙），支持在脚本配置页修改三月七的差分宇宙相关设置。",
+      "version": "1.1.0",
+      "description": "调用三月七小助手执行差分宇宙（模拟宇宙·差分宇宙），支持在脚本配置页修改三月七相关设置，并可选择周常/日常/一次性运行频率。",
       "author": "Justice-ocr",
-      "last_updated": "2026-05-04",
+      "last_updated": "2026-06-22",
       "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/divergent_universe_m7",
       "repo_path": "repo/divergent_universe_m7",
       "tasks": [
