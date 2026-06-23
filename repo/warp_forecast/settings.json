@@ -101,14 +101,14 @@
     "type": "bool",
     "default": "false",
     "label": "启用小月卡",
-    "description": "开启后按每日 150 星琼估算，否则按每日 90 星琼估算。"
+    "description": "开启后按每日 150 星琼估算，否则按每日 60 星琼估算。"
   },
   {
     "key": "daily_jade_without_card",
     "type": "int",
-    "default": "90",
+    "default": "60",
     "label": "无小月卡每日星琼",
-    "description": "每日活跃奖励，默认 90 星琼。"
+    "description": "每日活跃奖励，默认 60 星琼。"
   },
   {
     "key": "daily_jade_with_card",

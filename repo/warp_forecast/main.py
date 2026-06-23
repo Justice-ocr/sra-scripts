@@ -15,7 +15,7 @@ PULL_COST = 160
 
 GRID_FIRST_X, GRID_FIRST_Y = 188, 191
 GRID_STEP_X, GRID_STEP_Y = 125, 149
-GRID_COLS, GRID_ROWS = 9, 5
+GRID_COLS, GRID_ROWS = 9, 1
 GRID_CELLS = [
     (
         round((GRID_FIRST_X + col * GRID_STEP_X) / 1920, 4),
@@ -155,30 +155,32 @@ class WarpForecastTask(BaseTask):
 
     def run(self) -> bool:
         logger.info("抽卡资源预测开始")
+        try:
+            current = self._manual_current_resources()
+            if _bool_param(self, "scan_bag", True):
+                scanned = self._read_bag_resources()
+                current = Resources(
+                    jade=scanned.jade if scanned.jade > 0 else current.jade,
+                    special_pass=scanned.special_pass if scanned.special_pass > 0 else current.special_pass,
+                    normal_pass=scanned.normal_pass if scanned.normal_pass > 0 else current.normal_pass,
+                )
 
-        current = self._manual_current_resources()
-        if _bool_param(self, "scan_bag", True):
-            scanned = self._read_bag_resources()
-            current = Resources(
-                jade=scanned.jade if scanned.jade > 0 else current.jade,
-                special_pass=scanned.special_pass if scanned.special_pass > 0 else current.special_pass,
-                normal_pass=scanned.normal_pass if scanned.normal_pass > 0 else current.normal_pass,
-            )
+            event = self._manual_event_resources()
+            if _bool_param(self, "scan_event_guide", True):
+                scanned_event = self._read_event_guide_rewards()
+                event = event.add(scanned_event)
 
-        event = self._manual_event_resources()
-        if _bool_param(self, "scan_event_guide", True):
-            scanned_event = self._read_event_guide_rewards()
-            event = event.add(scanned_event)
+            schedule = self._build_schedule()
+            future = self._future_resources(schedule)
+            total = current.add(event).add(future)
 
-        schedule = self._build_schedule()
-        future = self._future_resources(schedule)
-        total = current.add(event).add(future)
-
-        message = self._format_report(current, event, future, total, schedule)
-        logger.info("\n" + message)
-        try_send_notification("抽卡资源预测", message, result="success", operator=self.operator)
-        logger.info("抽卡资源预测完成")
-        return True
+            message = self._format_report(current, event, future, total, schedule)
+            logger.info("\n" + message)
+            try_send_notification("抽卡资源预测", message, result="success", operator=self.operator)
+            logger.info("抽卡资源预测完成")
+            return True
+        finally:
+            self._return_to_world()
 
     def _manual_current_resources(self) -> Resources:
         return Resources(
@@ -269,7 +271,7 @@ class WarpForecastTask(BaseTask):
         daily = _int_param(
             self,
             "daily_jade_with_card" if _bool_param(self, "has_monthly_card", False) else "daily_jade_without_card",
-            150 if _bool_param(self, "has_monthly_card", False) else 90,
+            150 if _bool_param(self, "has_monthly_card", False) else 60,
         )
         endgame_jade = max(0, _int_param(self, "endgame_jade_per_refresh", 800))
         weekly_jade = max(0, _int_param(self, "weekly_universe_jade", 225))
@@ -310,6 +312,15 @@ class WarpForecastTask(BaseTask):
             logger.warning(f"背包资源自动识别失败：{exc}")
         logger.info(f"背包识别结果：星琼={resources.jade}, 专票={resources.special_pass}, 通票={resources.normal_pass}")
         return resources
+
+    def _return_to_world(self) -> None:
+        for index in range(3):
+            try:
+                self.operator.press_key("escape", wait=0.2, trace=(index == 0))
+                self.operator.sleep(0.4)
+            except Exception as exc:
+                logger.warning(f"任务结束返回角色界面失败：{exc}")
+                return
 
     def _activate_window(self) -> None:
         op = self.operator
