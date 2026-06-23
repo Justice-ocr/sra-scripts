@@ -1,0 +1,220 @@
+[
+  {
+    "key": "group_version",
+    "type": "group",
+    "label": "版本周期"
+  },
+  {
+    "key": "version_start_date",
+    "type": "string",
+    "default": "",
+    "label": "版本起始日期",
+    "description": "格式 YYYY-MM-DD。用于手动兜底计算当前版本剩余时间，留空则只统计当前资源和手动奖励。"
+  },
+  {
+    "key": "version_days",
+    "type": "int",
+    "default": "42",
+    "label": "版本持续天数",
+    "description": "默认 42 天。版本结束日期按 起始日期 + 持续天数 计算。"
+  },
+  {
+    "key": "preview_before_end_days",
+    "type": "int",
+    "default": "12",
+    "label": "前瞻提前天数",
+    "description": "默认版本结束前 12 天视为下一版本前瞻活动开始；当前日期早于该日期时额外计入前瞻兑换码星琼。"
+  },
+  {
+    "key": "preview_status",
+    "type": "select",
+    "default": "auto",
+    "label": "前瞻状态",
+    "options": [
+      "auto",
+      "done",
+      "not_done"
+    ],
+    "description": "auto=按版本起始日期和提前天数判断；done=已前瞻，不加兑换码；not_done=未前瞻，计入兑换码。"
+  },
+  {
+    "key": "group_endgame",
+    "type": "group",
+    "label": "深渊与周常"
+  },
+  {
+    "key": "endgame_refresh_interval_days",
+    "type": "int",
+    "default": "14",
+    "label": "深渊刷新间隔",
+    "description": "默认每 14 天刷新一次混沌回忆/虚构叙事/末日幻影中的一期。"
+  },
+  {
+    "key": "endgame_first_refresh_offset_days",
+    "type": "int",
+    "default": "0",
+    "label": "首次深渊刷新偏移",
+    "description": "相对版本起始日期的天数偏移。默认 0 表示版本起始当天算作一个刷新点。"
+  },
+  {
+    "key": "endgame_refresh_count_override",
+    "type": "int",
+    "default": "-1",
+    "label": "深渊剩余次数覆盖",
+    "description": "-1=按版本日期自动计算；填 0 或更大数字时直接使用该次数。每次按下方奖励值计算。"
+  },
+  {
+    "key": "include_today_endgame",
+    "type": "bool",
+    "default": "true",
+    "label": "当天深渊计入剩余",
+    "description": "开启后，如果今天正好是刷新日，会计入一次；关闭则从明天开始计算。"
+  },
+  {
+    "key": "weekly_reset_weekday",
+    "type": "int",
+    "default": "0",
+    "label": "周常刷新星期",
+    "description": "0=周一，1=周二，依此类推，6=周日。用于计算剩余模拟宇宙/差分宇宙/货币战争周常奖励。"
+  },
+  {
+    "key": "weekly_count_override",
+    "type": "int",
+    "default": "-1",
+    "label": "周常剩余次数覆盖",
+    "description": "-1=按日期自动计算；填 0 或更大数字时直接使用该次数。"
+  },
+  {
+    "key": "include_today_weekly",
+    "type": "bool",
+    "default": "true",
+    "label": "当天周常计入剩余",
+    "description": "开启后，如果今天正好是周常刷新日，会计入本周奖励；关闭则从明天开始计算。"
+  },
+  {
+    "key": "group_rewards",
+    "type": "group",
+    "label": "奖励数值"
+  },
+  {
+    "key": "has_monthly_card",
+    "type": "bool",
+    "default": "false",
+    "label": "启用小月卡",
+    "description": "开启后按每日 150 星琼估算，否则按每日 90 星琼估算。"
+  },
+  {
+    "key": "daily_jade_without_card",
+    "type": "int",
+    "default": "90",
+    "label": "无小月卡每日星琼",
+    "description": "每日活跃奖励，默认 90 星琼。"
+  },
+  {
+    "key": "daily_jade_with_card",
+    "type": "int",
+    "default": "150",
+    "label": "小月卡每日星琼",
+    "description": "每日活跃 + 小月卡，默认 150 星琼。"
+  },
+  {
+    "key": "endgame_jade_per_refresh",
+    "type": "int",
+    "default": "800",
+    "label": "每期深渊星琼",
+    "description": "每次深渊类刷新按该值估算，默认 800 星琼。"
+  },
+  {
+    "key": "weekly_universe_jade",
+    "type": "int",
+    "default": "225",
+    "label": "每周宇宙星琼",
+    "description": "每周模拟宇宙/差分宇宙/货币战争奖励，默认 225 星琼。"
+  },
+  {
+    "key": "preview_jade",
+    "type": "int",
+    "default": "300",
+    "label": "前瞻兑换码星琼",
+    "description": "下一版本前瞻尚未进行时额外计入，默认 300 星琼。"
+  },
+  {
+    "key": "group_resource",
+    "type": "group",
+    "label": "当前资源"
+  },
+  {
+    "key": "scan_bag",
+    "type": "bool",
+    "default": "true",
+    "label": "自动识别背包资源",
+    "description": "开启后尝试打开背包识别星琼、星轨专票、星轨通票；识别失败则使用下方手动值。"
+  },
+  {
+    "key": "manual_current_jade",
+    "type": "int",
+    "default": "0",
+    "label": "手动当前星琼",
+    "description": "自动识别失败或关闭自动识别时使用。"
+  },
+  {
+    "key": "manual_special_pass",
+    "type": "int",
+    "default": "0",
+    "label": "手动星轨专票",
+    "description": "自动识别失败或关闭自动识别时使用。"
+  },
+  {
+    "key": "manual_normal_pass",
+    "type": "int",
+    "default": "0",
+    "label": "手动星轨通票",
+    "description": "自动识别失败或关闭自动识别时使用。"
+  },
+  {
+    "key": "group_event",
+    "type": "group",
+    "label": "奖励指南"
+  },
+  {
+    "key": "scan_event_guide",
+    "type": "bool",
+    "default": "true",
+    "label": "自动识别奖励指南",
+    "description": "开启后尝试从旅情事记的奖励指南读取“剩余”奖励；识别失败则使用下方手动值。"
+  },
+  {
+    "key": "event_reward_type",
+    "type": "select",
+    "default": "auto",
+    "label": "剩余奖励类型",
+    "options": [
+      "auto",
+      "jade",
+      "normal_pass",
+      "special_pass"
+    ],
+    "description": "auto=尽量按文字上下文判断；如果图标无法识别，可手动指定剩余数字属于星琼/通票/专票。"
+  },
+  {
+    "key": "manual_event_jade",
+    "type": "int",
+    "default": "0",
+    "label": "手动剩余星琼",
+    "description": "奖励指南识别失败或关闭自动识别时使用。"
+  },
+  {
+    "key": "manual_event_special_pass",
+    "type": "int",
+    "default": "0",
+    "label": "手动剩余专票",
+    "description": "奖励指南识别失败或关闭自动识别时使用。"
+  },
+  {
+    "key": "manual_event_normal_pass",
+    "type": "int",
+    "default": "0",
+    "label": "手动剩余通票",
+    "description": "奖励指南识别失败或关闭自动识别时使用。"
+  }
+]

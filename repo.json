@@ -74,6 +74,23 @@
           "class": "ExampleTask"
         }
       ]
+    },
+    {
+      "id": "warp_forecast",
+      "name": "抽卡资源预测",
+      "version": "1.0.0",
+      "description": "识别当前星琼、星轨专票、星轨通票和奖励指南剩余资源，并按手动版本周期规则预测当前版本结束前还能获得多少抽。",
+      "author": "Justice-ocr",
+      "last_updated": "2026-06-23",
+      "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/warp_forecast",
+      "repo_path": "repo/warp_forecast",
+      "tasks": [
+        {
+          "name": "抽卡资源预测",
+          "entry": "main.py",
+          "class": "WarpForecastTask"
+        }
+      ]
     }
   ]
 }
