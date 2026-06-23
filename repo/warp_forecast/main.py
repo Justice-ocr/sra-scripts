@@ -176,6 +176,8 @@ class WarpForecastTask(BaseTask):
     def run(self) -> bool:
         logger.info("抽卡资源预测开始")
         try:
+            self._ensure_game_world_ready()
+
             current = self._manual_current_resources()
             if _bool_param(self, "scan_bag", True):
                 scanned = self._read_bag_resources()
@@ -332,6 +334,28 @@ class WarpForecastTask(BaseTask):
             logger.warning(f"背包资源自动识别失败：{exc}")
         logger.info(f"背包识别结果：星琼={resources.jade}, 专票={resources.special_pass}, 通票={resources.normal_pass}")
         return resources
+
+    def _ensure_game_world_ready(self) -> bool:
+        self._activate_window()
+        for attempt in range(5):
+            if self._has_world_enter_prompt():
+                logger.info("已切换到游戏窗口，并检测到角色操作界面 Enter 提示")
+                return True
+            logger.info(f"未检测到左下角 Enter 提示，按 Esc 返回角色操作界面 ({attempt + 1}/5)")
+            self.operator.press_key("escape")
+            self.operator.sleep(0.8)
+
+        if self._has_world_enter_prompt():
+            logger.info("已检测到角色操作界面 Enter 提示")
+            return True
+        logger.warning("连续按 Esc 后仍未检测到左下角 Enter 提示，继续执行后续流程")
+        return False
+
+    def _has_world_enter_prompt(self) -> bool:
+        results = self.operator.ocr(from_x=0.02, from_y=0.84, to_x=0.13, to_y=0.96, trace=False)
+        text = _ocr_text(results, 0.5).lower()
+        logger.debug(f"左下角操作提示 OCR: {text}")
+        return "enter" in text or "回车" in text
 
     def _return_to_world(self) -> None:
         for index in range(2):
