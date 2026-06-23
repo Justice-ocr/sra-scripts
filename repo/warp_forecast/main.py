@@ -377,8 +377,7 @@ class WarpForecastTask(BaseTask):
             if not self._open_reward_guide():
                 logger.warning("未能打开奖励指南，跳过奖励指南识别")
                 return resources
-            results = self.operator.ocr(from_x=0.0, from_y=0.0, to_x=1.0, to_y=1.0, trace=False)
-            resources = self._parse_event_rewards(results)
+            resources = self._scan_event_guide_pages()
             self.operator.press_key("escape")
             self.operator.sleep(0.4)
         except Exception as exc:
@@ -391,25 +390,35 @@ class WarpForecastTask(BaseTask):
         self._activate_window()
         op.click_point(0.5, 0.5, after_sleep=0.3)
 
-        world_text = _ocr_text(op.ocr(from_x=0.0, from_y=0.86, to_x=0.14, to_y=1.0, trace=False), 0.55)
-        if "Enter" in world_text or "回车" in world_text:
+        if op.wait_ocr("旅情事记", timeout=2, confidence=0.65, from_x=0.55, from_y=0.20, to_x=0.95, to_y=0.78) is None:
             op.press_key("escape")
             op.sleep(1.0)
 
-        if op.wait_ocr("旅情事记", timeout=3, confidence=0.65, from_x=0.55, from_y=0.20, to_x=0.95, to_y=0.78) is None:
-            op.press_key("escape")
-            op.sleep(1.0)
-
-        menu = op.ocr(from_x=0.50, from_y=0.18, to_x=0.98, to_y=0.82, trace=False)
-        if not self._click_text(menu, "旅情事记", fallback=(0.73, 0.52)):
+        if op.wait_ocr("旅情事记", timeout=4, confidence=0.65, from_x=0.55, from_y=0.20, to_x=0.95, to_y=0.78) is None:
+            logger.warning("未识别到 ESC 菜单中的旅情事记入口")
             return False
-        op.sleep(1.2)
 
-        guide = op.ocr(from_x=0.10, from_y=0.02, to_x=0.45, to_y=0.20, trace=False)
-        if not self._click_text(guide, "奖励指南", fallback=(0.24, 0.08)):
+        # OCR 返回裁剪区域内坐标，直接点击 OCR 框容易偏移。这里改为按 1920x1080
+        # 基准坐标点击 ESC 菜单里的“旅情事记”入口。
+        for x, y in ((1342, 538), (1410, 556)):
+            self._click_1920(x, y, after_sleep=1.5, tag="旅情事记")
+            if op.wait_ocr("奖励指南", timeout=4, confidence=0.6, from_x=0.0, from_y=0.0, to_x=0.55, to_y=0.22) is not None:
+                break
+        else:
+            logger.warning("点击旅情事记后未进入包含奖励指南的页面")
             return False
-        op.sleep(1.0)
+
+        # 旅情事记页左上方页签“奖励指南”，按 1920x1080 固定位置点击。
+        for x, y in ((455, 86), (500, 86)):
+            self._click_1920(x, y, after_sleep=1.0, tag="奖励指南")
+            if op.wait_ocr("剩余", timeout=3, confidence=0.55, from_x=0.0, from_y=0.10, to_x=1.0, to_y=0.95) is not None:
+                return True
+
+        logger.warning("已尝试点击奖励指南，但未识别到“剩余”文本，将继续扫描当前页面")
         return True
+
+    def _click_1920(self, x: int, y: int, *, after_sleep: float = 0.0, tag: str = "") -> bool:
+        return self.operator.click_point(x / 1920, y / 1080, after_sleep=after_sleep, tag=tag)
 
     def _click_text(self, results: list[Any] | None, text: str, fallback: tuple[float, float]) -> bool:
         for item in _ocr_items(results, 0.55):
@@ -423,10 +432,96 @@ class WarpForecastTask(BaseTask):
         self.operator.click_point(fallback[0], fallback[1], after_sleep=0.5)
         return True
 
+    def _scan_event_guide_pages(self) -> Resources:
+        op = self.operator
+        resources = Resources()
+        seen_pages: set[str] = set()
+        seen_records: set[tuple[str, int, str]] = set()
+
+        self._click_1920(960, 540, after_sleep=0.2, tag="奖励指南内容区")
+        self._scroll_event_guide_to_top()
+
+        stable_pages = 0
+        previous_fingerprint = ""
+        for page_index in range(14):
+            if self.stop_event and self.stop_event.is_set():
+                break
+
+            results = op.ocr(from_x=0.0, from_y=0.08, to_x=1.0, to_y=0.96, trace=False)
+            fingerprint = self._event_page_fingerprint(results)
+            if fingerprint in seen_pages:
+                stable_pages += 1
+            else:
+                stable_pages = 0
+                seen_pages.add(fingerprint)
+
+            page_resources, page_records = self._parse_event_reward_records(results)
+            for key, amount, reward_type in page_records:
+                if (key, amount, reward_type) in seen_records:
+                    continue
+                seen_records.add((key, amount, reward_type))
+                if reward_type == "normal_pass":
+                    resources.normal_pass += amount
+                elif reward_type == "special_pass":
+                    resources.special_pass += amount
+                else:
+                    resources.jade += amount
+
+            logger.debug(
+                f"奖励指南第 {page_index + 1} 屏："
+                f"星琼+{page_resources.jade}, 专票+{page_resources.special_pass}, 通票+{page_resources.normal_pass}"
+            )
+
+            op.scroll(-7)
+            op.sleep(0.8)
+            next_results = op.ocr(from_x=0.0, from_y=0.08, to_x=1.0, to_y=0.96, trace=False)
+            next_fingerprint = self._event_page_fingerprint(next_results)
+            if next_fingerprint == previous_fingerprint or next_fingerprint == fingerprint:
+                stable_pages += 1
+            else:
+                stable_pages = 0
+            previous_fingerprint = fingerprint
+            if stable_pages >= 2:
+                logger.info("奖励指南向下滑动已无新内容，结束扫描")
+                break
+
+        return resources
+
+    def _scroll_event_guide_to_top(self) -> None:
+        op = self.operator
+        previous_fingerprint = ""
+        stable_count = 0
+        for _ in range(8):
+            results = op.ocr(from_x=0.0, from_y=0.08, to_x=1.0, to_y=0.96, trace=False)
+            fingerprint = self._event_page_fingerprint(results)
+            if fingerprint == previous_fingerprint:
+                stable_count += 1
+            else:
+                stable_count = 0
+            if stable_count >= 2:
+                logger.info("奖励指南已滑动到顶部")
+                return
+            previous_fingerprint = fingerprint
+            op.scroll(7)
+            op.sleep(0.6)
+
+    def _event_page_fingerprint(self, results: list[Any] | None) -> str:
+        texts = [
+            re.sub(r"\s+", "", str(item[1]))
+            for item in _ocr_items(results, 0.55)
+            if str(item[1]).strip()
+        ]
+        return "|".join(texts[:30])
+
     def _parse_event_rewards(self, results: list[Any] | None) -> Resources:
+        resources, _ = self._parse_event_reward_records(results)
+        return resources
+
+    def _parse_event_reward_records(self, results: list[Any] | None) -> tuple[Resources, list[tuple[str, int, str]]]:
         reward_type = _text_param(self, "event_reward_type", "auto").lower()
         items = _ocr_items(results, 0.5)
         resources = Resources()
+        records: list[tuple[str, int, str]] = []
 
         for item in items:
             text = str(item[1])
@@ -447,8 +542,19 @@ class WarpForecastTask(BaseTask):
                 resources.special_pass += number
             else:
                 resources.jade += number
+            records.append((self._event_record_key(item, items), number, actual_type))
 
-        return resources
+        return resources, records
+
+    def _event_record_key(self, item: Any, items: list[Any]) -> str:
+        box = item[0]
+        _, y = _box_center(item)
+        nearby = []
+        for other in items:
+            ox, oy = _box_center(other)
+            if abs(oy - y) <= 70 and ox <= max(point[0] for point in box) + 260:
+                nearby.append(str(other[1]).strip())
+        return re.sub(r"\s+", "", "|".join(nearby))[:120]
 
     def _number_right_of(self, item: Any, items: list[Any]) -> int | None:
         box = item[0]
