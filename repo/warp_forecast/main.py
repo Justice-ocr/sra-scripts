@@ -150,6 +150,26 @@ def _find_num_near_keyword(results: list[Any] | None, keywords: tuple[str, ...])
     return None
 
 
+def _find_top_bar_jade(results: list[Any] | None) -> int:
+    jade = _find_num_near_keyword(results, ("星琼", "琼"))
+    if jade is not None:
+        return jade
+
+    nums_x = sorted(
+        (
+            (_box_center(item)[0], number)
+            for item in _ocr_items(results, 0.8)
+            for number in [_clean_number(str(item[1]))]
+            if number is not None and re.fullmatch(r"\d[\d,]*", str(item[1]).replace("，", ",").strip())
+        ),
+        key=lambda item: item[0],
+    )
+    logger.debug(f"顶栏数字(左→右): {nums_x}")
+    if nums_x:
+        return nums_x[-1][1]
+    return 0
+
+
 class WarpForecastTask(BaseTask):
     """预测当前版本结束前的抽卡资源。"""
 
@@ -300,7 +320,7 @@ class WarpForecastTask(BaseTask):
                 return resources
 
             top_bar = op.ocr(**TOP_BAR, trace=False)
-            resources.jade = _find_num_near_keyword(top_bar, ("星琼", "琼")) or 0
+            resources.jade = _find_top_bar_jade(top_bar)
 
             self._click_precious_tab()
             special, normal = self._scan_passes()
@@ -314,7 +334,7 @@ class WarpForecastTask(BaseTask):
         return resources
 
     def _return_to_world(self) -> None:
-        for index in range(3):
+        for index in range(2):
             try:
                 self.operator.press_key("escape", wait=0.2, trace=(index == 0))
                 self.operator.sleep(0.4)
