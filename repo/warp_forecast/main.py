@@ -54,6 +54,7 @@ class Resources:
 
 @dataclass
 class Schedule:
+    configured_start_date: date | None
     start_date: date | None
     end_date: date | None
     preview_date: date | None
@@ -61,6 +62,7 @@ class Schedule:
     endgame_refresh_count: int
     weekly_count: int
     preview_pending: bool
+    version_compensation_jade: int
 
 
 def _int_param(task: BaseTask, key: str, default: int) -> int:
@@ -220,10 +222,12 @@ class WarpForecastTask(BaseTask):
 
     def _build_schedule(self) -> Schedule:
         today = date.today()
-        start = _parse_date(_text_param(self, "version_start_date", ""))
+        configured_start = _parse_date(_text_param(self, "version_start_date", ""))
         version_days = max(1, _int_param(self, "version_days", 42))
         preview_before_end = max(0, _int_param(self, "preview_before_end_days", 12))
+        compensation_jade = max(0, _int_param(self, "version_compensation_jade", 600))
 
+        start = self._current_version_start(configured_start, version_days, today)
         end = start + timedelta(days=version_days) if start else None
         preview_date = end - timedelta(days=preview_before_end) if end else None
         remaining_days = max(0, (end - today).days) if end else 0
@@ -240,6 +244,7 @@ class WarpForecastTask(BaseTask):
             preview_pending = bool(preview_date and today < preview_date)
 
         return Schedule(
+            configured_start_date=configured_start,
             start_date=start,
             end_date=end,
             preview_date=preview_date,
@@ -247,7 +252,17 @@ class WarpForecastTask(BaseTask):
             endgame_refresh_count=endgame_count,
             weekly_count=weekly_count,
             preview_pending=preview_pending,
+            version_compensation_jade=compensation_jade if start else 0,
         )
+
+    def _current_version_start(self, configured_start: date | None, version_days: int, today: date) -> date | None:
+        if configured_start is None:
+            return None
+        if today < configured_start:
+            return configured_start
+        elapsed_days = (today - configured_start).days
+        cycles = elapsed_days // version_days
+        return configured_start + timedelta(days=cycles * version_days)
 
     def _remaining_endgame_count(self, start: date | None, end: date | None, today: date) -> int:
         override = _int_param(self, "endgame_refresh_count_override", -1)
@@ -305,6 +320,7 @@ class WarpForecastTask(BaseTask):
                 + max(0, schedule.endgame_refresh_count) * endgame_jade
                 + max(0, schedule.weekly_count) * weekly_jade
                 + preview_jade
+                + schedule.version_compensation_jade
             )
         )
 
@@ -668,6 +684,7 @@ class WarpForecastTask(BaseTask):
             f"- 星轨通票：{event.normal_pass}",
             "",
             "版本剩余估算",
+            f"- 配置基准起始：{schedule.configured_start_date or '未设置'}",
             f"- 版本起始：{schedule.start_date or '未设置'}",
             f"- 版本结束：{schedule.end_date or '未设置'}",
             f"- 前瞻日期：{schedule.preview_date or '未设置'}",
@@ -675,6 +692,7 @@ class WarpForecastTask(BaseTask):
             f"- 剩余深渊刷新：{schedule.endgame_refresh_count}",
             f"- 剩余周常奖励：{schedule.weekly_count}",
             f"- 前瞻兑换码：{'计入' if schedule.preview_pending else '不计入'}",
+            f"- 版本更新补偿：{schedule.version_compensation_jade}",
             f"- 预计未来星琼：{future.jade}",
             "",
             "版本结束预计",

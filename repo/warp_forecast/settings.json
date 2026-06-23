@@ -9,14 +9,14 @@
     "type": "string",
     "default": "",
     "label": "版本起始日期",
-    "description": "格式 YYYY-MM-DD。用于手动兜底计算当前版本剩余时间，留空则只统计当前资源和手动奖励。"
+    "description": "格式 YYYY-MM-DD。可填写任意已知版本起始日，脚本会按版本持续天数自动滚动到当前版本起始日。留空则只统计当前资源和手动奖励。"
   },
   {
     "key": "version_days",
     "type": "int",
     "default": "42",
     "label": "版本持续天数",
-    "description": "默认 42 天。版本结束日期按 起始日期 + 持续天数 计算。"
+    "description": "默认 42 天。每隔该天数自动更新当前版本起始日。"
   },
   {
     "key": "preview_before_end_days",
@@ -95,6 +95,13 @@
     "key": "group_rewards",
     "type": "group",
     "label": "奖励数值"
+  },
+  {
+    "key": "version_compensation_jade",
+    "type": "int",
+    "default": "600",
+    "label": "版本更新补偿星琼",
+    "description": "每个版本起始日额外计入的版本更新补偿，默认 600 星琼。"
   },
   {
     "key": "has_monthly_card",
