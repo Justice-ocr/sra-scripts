@@ -1,11 +1,11 @@
 {
   "name": "SRA Scripts",
-  "generated_at": "2026-06-23T09:53:37.507954+00:00",
+  "generated_at": "2026-06-25T00:00:00+00:00",
   "scripts": [
     {
       "id": "bag_check",
       "name": "背包资源查询",
-      "version": "1.0.0",
+      "version": "1.0.6",
       "description": "查询背包中的星琼、专票、通票、信用点数量，并通过通知渠道发送结果。",
       "author": "Justice-ocr",
       "last_updated": "2026-04-09",
@@ -78,10 +78,10 @@
     {
       "id": "warp_forecast",
       "name": "抽卡资源预测",
-      "version": "1.0.6",
-      "description": "识别当前星琼、星轨专票、星轨通票和奖励指南剩余资源，并按手动版本周期规则预测当前版本结束前还能获得多少抽。",
+      "version": "1.0.0",
+      "description": "识别右上角星琼、星轨专票、星轨通票和奖励指南剩余资源，并按版本周期、月卡、月初商店、深渊类刷新、周常和前瞻规则预测当前版本结束前还能获得多少抽。",
       "author": "Justice-ocr",
-      "last_updated": "2026-06-23",
+      "last_updated": "2026-06-25",
       "download_url": "https://raw.githubusercontent.com/Justice-ocr/sra-scripts/main/repo/warp_forecast",
       "repo_path": "repo/warp_forecast",
       "tasks": [

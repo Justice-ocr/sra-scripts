@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import re
 from dataclasses import dataclass
@@ -27,7 +27,9 @@ GRID_CELLS = [
 
 DETAIL_TITLE = dict(from_x=0.55, from_y=0.08, to_x=0.98, to_y=0.18)
 DETAIL_COUNT = dict(from_x=0.70, from_y=0.24, to_x=0.85, to_y=0.36)
+DETAIL_COUNT_RIGHT = dict(from_x=0.78, from_y=0.22, to_x=0.98, to_y=0.38)
 TOP_BAR = dict(from_x=0.55, from_y=0.0, to_x=1.0, to_y=0.08)
+TOP_BAR_JADE_COUNT = dict(from_x=0.86, from_y=0.02, to_x=0.97, to_y=0.10)
 
 
 @dataclass
@@ -61,28 +63,31 @@ class Schedule:
     remaining_days: int
     endgame_refresh_count: int
     weekly_count: int
+    monthly_shop_count: int
     preview_pending: bool
-    version_compensation_jade: int
 
 
 def _int_param(task: BaseTask, key: str, default: int) -> int:
     try:
-        return int(task.get_param(key, default))
+        return int(_get_warp_forecast_setting(task, key, default))
     except (TypeError, ValueError):
         return default
 
 
 def _bool_param(task: BaseTask, key: str, default: bool = False) -> bool:
-    raw = task.get_param(key, default)
+    raw = _get_warp_forecast_setting(task, key, default)
     if raw is None:
         return default
     return str(raw).strip().lower() in ("true", "1", "yes", "y", "on")
 
 
 def _text_param(task: BaseTask, key: str, default: str = "") -> str:
-    raw = task.get_param(key, default)
+    raw = _get_warp_forecast_setting(task, key, default)
     return default if raw is None else str(raw).strip()
 
+
+def _get_warp_forecast_setting(task: BaseTask, key: str, default: Any) -> Any:
+    return task.get_param(key, default)
 
 def _parse_date(value: str) -> date | None:
     value = (value or "").strip()
@@ -172,6 +177,22 @@ def _find_top_bar_jade(results: list[Any] | None) -> int:
     return 0
 
 
+def _find_number_in_region(results: list[Any] | None) -> int:
+    nums_x = sorted(
+        (
+            (_box_center(item)[0], number)
+            for item in _ocr_items(results, 0.65)
+            for number in [_clean_number(str(item[1]))]
+            if number is not None
+        ),
+        key=lambda item: item[0],
+    )
+    logger.debug(f"右上角星琼候选数字(左→右): {nums_x}")
+    if nums_x:
+        return nums_x[-1][1]
+    return 0
+
+
 class WarpForecastTask(BaseTask):
     """预测当前版本结束前的抽卡资源。"""
 
@@ -200,7 +221,8 @@ class WarpForecastTask(BaseTask):
 
             message = self._format_report(current, event, future, total, schedule)
             logger.info("\n" + message)
-            try_send_notification("抽卡资源预测", message, result="success", operator=self.operator)
+            notification = self._format_notification_summary(current, event, future, total, schedule)
+            try_send_notification("抽卡资源预测", notification, result="success", operator=self.operator)
             logger.info("抽卡资源预测完成")
             return True
         finally:
@@ -225,7 +247,6 @@ class WarpForecastTask(BaseTask):
         configured_start = _parse_date(_text_param(self, "version_start_date", ""))
         version_days = max(1, _int_param(self, "version_days", 42))
         preview_before_end = max(0, _int_param(self, "preview_before_end_days", 12))
-        compensation_jade = max(0, _int_param(self, "version_compensation_jade", 600))
 
         start = self._current_version_start(configured_start, version_days, today)
         end = start + timedelta(days=version_days) if start else None
@@ -234,6 +255,7 @@ class WarpForecastTask(BaseTask):
 
         endgame_count = self._remaining_endgame_count(start, end, today)
         weekly_count = self._remaining_weekly_count(end, today)
+        monthly_shop_count = self._remaining_monthly_shop_count(end, today)
 
         preview_status = _text_param(self, "preview_status", "auto").lower()
         if preview_status == "done":
@@ -251,8 +273,8 @@ class WarpForecastTask(BaseTask):
             remaining_days=remaining_days,
             endgame_refresh_count=endgame_count,
             weekly_count=weekly_count,
+            monthly_shop_count=monthly_shop_count,
             preview_pending=preview_pending,
-            version_compensation_jade=compensation_jade if start else 0,
         )
 
     def _current_version_start(self, configured_start: date | None, version_days: int, today: date) -> date | None:
@@ -304,6 +326,26 @@ class WarpForecastTask(BaseTask):
             reset += timedelta(days=7)
         return count
 
+    def _remaining_monthly_shop_count(self, end: date | None, today: date) -> int:
+        override = _int_param(self, "monthly_shop_count_override", -1)
+        if override >= 0:
+            return override
+        if end is None or not _bool_param(self, "monthly_shop_enabled", True):
+            return 0
+
+        reset = today if today.day == 1 else self._first_day_of_next_month(today)
+        count = 0
+        while reset < end:
+            count += 1
+            reset = self._first_day_of_next_month(reset)
+        return count
+
+    @staticmethod
+    def _first_day_of_next_month(day: date) -> date:
+        if day.month == 12:
+            return date(day.year + 1, 1, 1)
+        return date(day.year, day.month + 1, 1)
+
     def _future_resources(self, schedule: Schedule) -> Resources:
         daily = _int_param(
             self,
@@ -313,6 +355,8 @@ class WarpForecastTask(BaseTask):
         endgame_jade = max(0, _int_param(self, "endgame_jade_per_refresh", 800))
         weekly_jade = max(0, _int_param(self, "weekly_universe_jade", 225))
         preview_jade = max(0, _int_param(self, "preview_jade", 300)) if schedule.preview_pending else 0
+        monthly_special = max(0, _int_param(self, "monthly_shop_special_pass", 5))
+        monthly_normal = max(0, _int_param(self, "monthly_shop_normal_pass", 5))
 
         return Resources(
             jade=(
@@ -320,8 +364,9 @@ class WarpForecastTask(BaseTask):
                 + max(0, schedule.endgame_refresh_count) * endgame_jade
                 + max(0, schedule.weekly_count) * weekly_jade
                 + preview_jade
-                + schedule.version_compensation_jade
-            )
+            ),
+            special_pass=max(0, schedule.monthly_shop_count) * monthly_special,
+            normal_pass=max(0, schedule.monthly_shop_count) * monthly_normal,
         )
 
     def _read_bag_resources(self) -> Resources:
@@ -337,13 +382,15 @@ class WarpForecastTask(BaseTask):
                 logger.warning("背包未打开，跳过背包自动识别")
                 return resources
 
-            top_bar = op.ocr(**TOP_BAR, trace=False)
-            resources.jade = _find_top_bar_jade(top_bar)
+            top_bar_jade = _find_number_in_region(op.ocr(**TOP_BAR_JADE_COUNT, trace=False))
+            if top_bar_jade <= 0:
+                top_bar_jade = _find_top_bar_jade(op.ocr(**TOP_BAR, trace=False))
 
-            self._click_precious_tab()
-            special, normal = self._scan_passes()
-            resources.special_pass = special or 0
-            resources.normal_pass = normal or 0
+            self._ensure_precious_tab()
+            scanned = self._scan_bag_items()
+            resources.jade = top_bar_jade
+            resources.special_pass = scanned.special_pass
+            resources.normal_pass = scanned.normal_pass
             op.press_key("escape")
             op.sleep(0.5)
         except Exception as exc:
@@ -392,26 +439,34 @@ class WarpForecastTask(BaseTask):
                 logger.warning(f"激活窗口失败 attempt={attempt}: {exc}")
                 op.sleep(0.5)
 
-    def _click_precious_tab(self) -> None:
+    def _ensure_precious_tab(self) -> bool:
         op = self.operator
-        tab_y = int(op.height * 0.044)
-        step = max(1, int(op.width * 0.01))
-        for px in range(int(op.width * 0.75), int(op.width * 0.20), -step):
-            op.click_point(px, tab_y, after_sleep=0.25)
-            label = _ocr_text(op.ocr(from_x=0.0, from_y=0.03, to_x=0.22, to_y=0.11, trace=False), 0.7)
-            if "贵重" in label:
-                logger.info(f"已切换到贵重物品页签 px={px}")
-                return
-        logger.warning("未确认贵重物品页签，继续尝试扫描当前页")
+        if self._bag_tab_is_precious():
+            logger.info("当前已在贵重物品页签")
+            return True
 
-    def _scan_passes(self) -> tuple[int | None, int | None]:
+        for key in ("q", "e"):
+            for attempt in range(8):
+                op.press_key(key, wait=0.15, trace=False)
+                op.sleep(0.45)
+                if self._bag_tab_is_precious():
+                    logger.info(f"已切换到贵重物品页签 key={key}, step={attempt + 1}")
+                    return True
+
+        logger.warning("未确认贵重物品页签，继续尝试扫描当前页")
+        return False
+
+    def _bag_tab_is_precious(self) -> bool:
+        label = _ocr_text(self.operator.ocr(from_x=0.0, from_y=0.03, to_x=0.22, to_y=0.11, trace=False), 0.7)
+        return "贵重" in label
+
+    def _scan_bag_items(self) -> Resources:
         op = self.operator
-        special_pass = None
-        normal_pass = None
+        resources = Resources()
         for index, (gx, gy) in enumerate(GRID_CELLS):
             if self.stop_event and self.stop_event.is_set():
                 break
-            if special_pass is not None and normal_pass is not None:
+            if resources.special_pass > 0 and resources.normal_pass > 0:
                 break
 
             op.click_point(int(op.width * gx), int(op.height * gy), after_sleep=0.25)
@@ -419,11 +474,14 @@ class WarpForecastTask(BaseTask):
             if not title:
                 continue
             logger.debug(f"背包格子 {index + 1}: {title}")
-            if "星轨专票" in title and special_pass is None:
-                special_pass = self._read_detail_count()
-            elif "星轨通票" in title and normal_pass is None:
-                normal_pass = self._read_detail_count()
-        return special_pass, normal_pass
+            count = self._read_detail_count()
+            if count is None:
+                continue
+            if "星轨专票" in title and resources.special_pass <= 0:
+                resources.special_pass = count
+            elif "星轨通票" in title and resources.normal_pass <= 0:
+                resources.normal_pass = count
+        return resources
 
     def _read_detail_title(self) -> str:
         results = self.operator.ocr(**DETAIL_TITLE, trace=False)
@@ -435,12 +493,16 @@ class WarpForecastTask(BaseTask):
         return max(candidates, key=len) if candidates else ""
 
     def _read_detail_count(self) -> int | None:
-        results = self.operator.ocr(**DETAIL_COUNT, trace=False)
-        full_text = _ocr_text(results, 0.5)
-        match = re.search(r"[xX×]\s*(\d+)", full_text)
-        if match:
-            return int(match.group(1))
-        return _clean_number(full_text)
+        for region in (DETAIL_COUNT_RIGHT, DETAIL_COUNT):
+            results = self.operator.ocr(**region, trace=False)
+            full_text = _ocr_text(results, 0.5)
+            match = re.search(r"[xX×]\s*(\d+)", full_text)
+            if match:
+                return int(match.group(1))
+            number = _clean_number(full_text)
+            if number is not None:
+                return number
+        return None
 
     def _read_event_guide_rewards(self) -> Resources:
         resources = Resources()
@@ -489,7 +551,9 @@ class WarpForecastTask(BaseTask):
         return True
 
     def _click_1920(self, x: int, y: int, *, after_sleep: float = 0.0, tag: str = "") -> bool:
-        return self.operator.click_point(x / 1920, y / 1080, after_sleep=after_sleep, tag=tag)
+        if tag:
+            logger.debug(f"点击 {tag}: ({x}, {y})")
+        return self.operator.click_point(x / 1920, y / 1080, after_sleep=after_sleep)
 
     def _click_text(self, results: list[Any] | None, text: str, fallback: tuple[float, float]) -> bool:
         for item in _ocr_items(results, 0.55):
@@ -691,9 +755,11 @@ class WarpForecastTask(BaseTask):
             f"- 剩余日常天数：{schedule.remaining_days}",
             f"- 剩余深渊刷新：{schedule.endgame_refresh_count}",
             f"- 剩余周常奖励：{schedule.weekly_count}",
+            f"- 剩余月初商店兑换：{schedule.monthly_shop_count}",
             f"- 前瞻兑换码：{'计入' if schedule.preview_pending else '不计入'}",
-            f"- 版本更新补偿：{schedule.version_compensation_jade}",
             f"- 预计未来星琼：{future.jade}",
+            f"- 预计未来星轨专票：{future.special_pass}",
+            f"- 预计未来星轨通票：{future.normal_pass}",
             "",
             "版本结束预计",
             f"- 总星琼：{total.jade}",
@@ -701,5 +767,20 @@ class WarpForecastTask(BaseTask):
             f"- 总星轨通票：{total.normal_pass}",
             f"- 限定池预计：{total.limited_pulls:.2f} 抽",
             f"- 常驻池预计：{total.standard_pulls} 抽",
+        ]
+        return "\n".join(lines)
+    def _format_notification_summary(
+        self,
+        current: Resources,
+        event: Resources,
+        future: Resources,
+        total: Resources,
+        schedule: Schedule,
+    ) -> str:
+        lines = [
+            f"限定：当前 {current.limited_pulls:.1f} 抽，版本末 {total.limited_pulls:.1f} 抽",
+            f"常驻：当前 {current.standard_pulls} 抽，版本末 {total.standard_pulls} 抽",
+            f"资源：{total.jade} 星琼 / {total.special_pass} 专票 / {total.normal_pass} 通票",
+            f"剩余：{schedule.remaining_days} 天，深渊 {schedule.endgame_refresh_count} 次，周常 {schedule.weekly_count} 次，商店 {schedule.monthly_shop_count} 次",
         ]
         return "\n".join(lines)

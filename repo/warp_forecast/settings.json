@@ -9,14 +9,14 @@
     "type": "string",
     "default": "",
     "label": "版本起始日期",
-    "description": "格式 YYYY-MM-DD。可填写任意已知版本起始日，脚本会按版本持续天数自动滚动到当前版本起始日。留空则只统计当前资源和手动奖励。"
+    "description": "格式 YYYY-MM-DD。可填写任意已知版本起始日，脚本会按版本持续天数自动推算当前版本。"
   },
   {
     "key": "version_days",
     "type": "int",
     "default": "42",
     "label": "版本持续天数",
-    "description": "默认 42 天。每隔该天数自动更新当前版本起始日。"
+    "description": "默认 42 天。版本结束日期按 起始日期 + 持续天数 计算。"
   },
   {
     "key": "preview_before_end_days",
@@ -97,13 +97,6 @@
     "label": "奖励数值"
   },
   {
-    "key": "version_compensation_jade",
-    "type": "int",
-    "default": "600",
-    "label": "版本更新补偿星琼",
-    "description": "每个版本起始日额外计入的版本更新补偿，默认 600 星琼。"
-  },
-  {
     "key": "has_monthly_card",
     "type": "bool",
     "default": "false",
@@ -139,6 +132,34 @@
     "description": "每周模拟宇宙/差分宇宙/货币战争奖励，默认 225 星琼。"
   },
   {
+    "key": "monthly_shop_enabled",
+    "type": "bool",
+    "default": "true",
+    "label": "月初商店兑换",
+    "description": "开启后计入每月 1 号余烬兑换商店刷新的星轨专票和星轨通票。"
+  },
+  {
+    "key": "monthly_shop_special_pass",
+    "type": "int",
+    "default": "5",
+    "label": "每月商店专票",
+    "description": "每次月初商店兑换可获得的星轨专票数量，默认 5。"
+  },
+  {
+    "key": "monthly_shop_normal_pass",
+    "type": "int",
+    "default": "5",
+    "label": "每月商店通票",
+    "description": "每次月初商店兑换可获得的星轨通票数量，默认 5。"
+  },
+  {
+    "key": "monthly_shop_count_override",
+    "type": "int",
+    "default": "-1",
+    "label": "商店次数覆盖",
+    "description": "-1=按版本结束日前的每月 1 号自动计算；填 0 或更大数字时直接使用该次数。"
+  },
+  {
     "key": "preview_jade",
     "type": "int",
     "default": "300",
@@ -155,7 +176,7 @@
     "type": "bool",
     "default": "true",
     "label": "自动识别背包资源",
-    "description": "开启后尝试打开背包识别星琼、星轨专票、星轨通票；识别失败则使用下方手动值。"
+    "description": "开启后识别右上角星琼数字，并扫描背包第一排的星轨专票、星轨通票；识别失败则使用下方手动值。"
   },
   {
     "key": "manual_current_jade",

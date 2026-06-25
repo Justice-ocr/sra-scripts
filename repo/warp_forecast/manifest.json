@@ -2,9 +2,9 @@
   "id": "warp_forecast",
   "name": "抽卡资源预测",
   "version": "1.0.6",
-  "description": "识别当前星琼、星轨专票、星轨通票和奖励指南剩余资源，并按手动版本周期规则预测当前版本结束前还能获得多少抽。",
+  "description": "识别右上角星琼、星轨专票、星轨通票和奖励指南剩余资源，并按版本周期、月卡、月初商店、深渊类刷新、周常和前瞻规则预测当前版本结束前还能获得多少抽。",
   "author": "Justice-ocr",
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-06-25",
   "settings": "settings.json",
   "tasks": [
     {
