@@ -26,6 +26,13 @@ DETAIL_COUNT = dict(from_x=0.70, from_y=0.24, to_x=0.85, to_y=0.36)
 TOP_BAR      = dict(from_x=0.55, from_y=0.0,  to_x=1.0,  to_y=0.08)
 
 
+def _notification_image(operator):
+    try:
+        return operator.screenshot()
+    except Exception:
+        return None
+
+
 class BagCheckTask(BaseTask):
 
     def run(self) -> bool:
@@ -45,7 +52,7 @@ class BagCheckTask(BaseTask):
         if op.width == 0 or op.height == 0:
             logger.error("无法获取游戏窗口，请确认游戏正在运行")
             try_send_notification("背包资源查询", "无法获取游戏窗口，请确认游戏正在运行。",
-                                  result="fail", operator=op)
+                                  result="fail", image=_notification_image(op))
             return False
 
         logger.info(f"窗口: left={op.left}, top={op.top}, {op.width}x{op.height}")
@@ -72,7 +79,7 @@ class BagCheckTask(BaseTask):
                        from_x=0.0, from_y=0.0, to_x=0.15, to_y=0.1) is None:
             logger.error("背包未打开")
             try_send_notification("背包资源查询", "背包未成功打开。",
-                                  result="fail", operator=op)
+                                  result="fail", image=_notification_image(op))
             return False
 
         logger.info(f"背包已打开，窗口: {op.width}x{op.height}")
@@ -142,7 +149,7 @@ class BagCheckTask(BaseTask):
         ]
         message = "\n".join(lines)
         logger.info(message)
-        try_send_notification("背包资源查询", message, result="success", operator=op)
+        try_send_notification("背包资源查询", message, result="success", image=_notification_image(op))
 
         op.sleep(0.3)
         op.press_key('escape')

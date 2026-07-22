@@ -32,6 +32,13 @@ TOP_BAR = dict(from_x=0.55, from_y=0.0, to_x=1.0, to_y=0.08)
 TOP_BAR_JADE_COUNT = dict(from_x=0.86, from_y=0.02, to_x=0.97, to_y=0.10)
 
 
+def _notification_image(operator: Any) -> Any | None:
+    try:
+        return operator.screenshot()
+    except Exception:
+        return None
+
+
 @dataclass
 class Resources:
     jade: int = 0
@@ -222,7 +229,12 @@ class WarpForecastTask(BaseTask):
             message = self._format_report(current, event, future, total, schedule)
             logger.info("\n" + message)
             notification = self._format_notification_summary(current, event, future, total, schedule)
-            try_send_notification("抽卡资源预测", notification, result="success", operator=self.operator)
+            try_send_notification(
+                "抽卡资源预测",
+                notification,
+                result="success",
+                image=_notification_image(self.operator),
+            )
             logger.info("抽卡资源预测完成")
             return True
         finally:
