@@ -67,6 +67,8 @@ SCHEDULE_MODES = {
     "always": "每次运行",
 }
 
+M7_WAIT_HEARTBEAT_SECONDS = 60
+
 STATE_FILE = Path(__file__).resolve().parent / "state.json"
 
 
@@ -550,6 +552,8 @@ class _CurrencyWarsM7Runner:
 
     def _wait_process_exit(self, pid: int, timeout: int) -> bool:
         deadline = time.time() + timeout
+        started_at = time.monotonic()
+        next_heartbeat_at = started_at + M7_WAIT_HEARTBEAT_SECONDS
         while time.time() < deadline:
             if self._stopped():
                 logger.info("收到停止信号，终止三月七进程")
@@ -558,6 +562,14 @@ class _CurrencyWarsM7Runner:
             if not _is_process_running(pid):
                 logger.info("三月七进程已退出")
                 return True
+
+            now = time.monotonic()
+            if now >= next_heartbeat_at:
+                elapsed = int(now - started_at)
+                logger.info(
+                    f"三月七仍在运行 (PID={pid})，已等待 {elapsed // 60} 分 {elapsed % 60} 秒"
+                )
+                next_heartbeat_at = now + M7_WAIT_HEARTBEAT_SECONDS
             time.sleep(3)
         logger.error(f"等待三月七超时（{timeout}s），强制终止")
         _kill_process(pid)

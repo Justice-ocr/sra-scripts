@@ -1,10 +1,10 @@
 {
   "id": "currency_wars_m7",
   "name": "货币战争（三月七）",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "调用三月七小助手执行货币战争，支持模式、职级难度、策略、奖励领取、快速饰品提取和周常/日常/一次性运行频率，并在结束后恢复三月七原始配置。",
   "author": "Justice-ocr",
-  "last_updated": "2026-06-22",
+  "last_updated": "2026-08-15",
   "settings": "settings.json",
   "tasks": [
     {
