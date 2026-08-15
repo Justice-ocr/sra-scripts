@@ -230,6 +230,7 @@ class WarpForecastTask(BaseTask):
             logger.info("\n" + message)
             notification = self._format_notification_summary(current, event, future, total, schedule)
             try_send_notification(
+                self.settings.Notification,
                 "抽卡资源预测",
                 notification,
                 result="success",
